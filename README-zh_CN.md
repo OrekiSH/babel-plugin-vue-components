@@ -1,4 +1,4 @@
-<h1 align="center">vite-plugin-nuxt-env</h1>
+<h1 align="center">babel-plugin-vue-components</h1>
 
 自动引入并将Vue组件注册为全局组件
 
