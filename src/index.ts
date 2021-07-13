@@ -30,7 +30,7 @@ export default function register(
   options: RegisterOptions,
 ) {
   const {
-    include, main, semicolon, extension, quotes,
+    include, main, semicolon = true, extension = true, quotes,
   } = options || {};
   const quote = quotes === 'single' ? '\'' : '"';
 
