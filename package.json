@@ -1,0 +1,58 @@
+{
+  "name": "babel-plugin-vue-components",
+  "version": "0.1.0",
+  "description": "Auto import and global register Vue components",
+  "module": "es/index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib",
+    "src",
+    "es"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OrekiSH/babel-plugin-vue-components"
+  },
+  "keywords": [
+    "babel",
+    "plugin",
+    "vue",
+    "vuecomponent",
+    "vue3"
+  ],
+  "authors": [
+    "OrekiSH <orekish@163.com> (https://github.com/OrekiSH)"
+  ],
+  "license": "MIT",
+  "bugs": "https://github.com/OrekiSH/babel-plugin-vue-components/issues",
+  "homepage": "https://github.com/OrekiSH/babel-plugin-vue-components",
+  "devDependencies": {
+    "@types/babel-traverse": "^6.25.6",
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
+    "eslint": "^7.28.0",
+    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-plugin-import": "^2.23.4",
+    "husky": "^7.0.1",
+    "lint-staged": "^11.0.0",
+    "typescript": "^4.3.2"
+  },
+  "scripts": {
+    "build": "npm run build:cjs && npm run build:es",
+    "build:es": "tsc --p ./tsconfig.es.json",
+    "build:cjs": "tsc",
+    "lint": "eslint .",
+    "lintfix": "eslint --fix .",
+    "prepare": "husky install",
+    "prepublishOnly": "npm run build",
+    "pre-commit": "lint-staged"
+  },
+  "dependencies": {
+    "fast-glob": "^3.2.6",
+    "lodash.camelcase": "^4.3.0",
+    "lodash.kebabcase": "^4.1.1"
+  },
+  "lint-staged": {
+    "src/**/*.ts": "npm run lint"
+  }
+}
