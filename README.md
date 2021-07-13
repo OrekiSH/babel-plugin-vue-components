@@ -6,7 +6,7 @@ English | <a href="https://github.com/OrekiSH/babel-plugin-vue-components/blob/m
 
 ## Install
 
-* First of all, install[babel/core](https://github.com/babel/babel/blob/main/packages/babel-core/README.md)
+* First of all, install [babel/core](https://github.com/babel/babel/blob/main/packages/babel-core/README.md)
 
 * Then install the plugin
 

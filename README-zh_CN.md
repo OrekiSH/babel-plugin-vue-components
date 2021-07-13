@@ -6,7 +6,7 @@
 
 ## 安装
 
-* 首先安装[babel/core](https://github.com/babel/babel/blob/main/packages/babel-core/README.md)
+* 首先安装 [babel/core](https://github.com/babel/babel/blob/main/packages/babel-core/README.md)
 
 * 接着安装插件
 
