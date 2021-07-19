@@ -30,7 +30,11 @@ export default function register(
   options: RegisterOptions,
 ) {
   const {
-    include, main, semicolon = true, extension = true, quotes = 'single',
+    include = ['./src/components/**/*.vue'],
+    main = './src/main.js',
+    semicolon = true,
+    extension = true,
+    quotes = 'single',
   } = options || {};
   const quote = quotes === 'single' ? '\'' : '"';
 

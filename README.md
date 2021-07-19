@@ -27,9 +27,6 @@ babel.transform(code, {
     [VueComponentsPlugin, {
       main: './src/main.ts',
       includes: ['./src/components/**/*.vue', './src/components/**/*.tsx'],
-      semicolon: true,
-      extension: true,
-      quotes: 'single',
     }],
   ],
 });
@@ -54,7 +51,7 @@ Vue.component('foo', foo);
 Vue.component('bar', bar);
 ```
 
-## Config
+## Options
 
 ### `main`
 
