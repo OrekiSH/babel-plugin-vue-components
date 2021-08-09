@@ -1,5 +1,6 @@
 import type { NodePath, Node } from 'babel-traverse';
 
+const fs = require('fs');
 const fg = require('fast-glob');
 const path = require('path');
 const kebabcase = require('lodash.kebabcase');
@@ -17,6 +18,7 @@ export interface Entry {
   path: string;
   name: string;
   registerName: string;
+  componentName?: string;
 }
 
 export type SourceType = 'script' | 'module' | 'unambiguous';
@@ -24,6 +26,8 @@ export type SourceType = 'script' | 'module' | 'unambiguous';
 export type UseTemplate = (code: string, opts: {
   sourceType: SourceType,
 }) => () => Node | Node[];
+
+const scriptBlockReg = /<script.*>([\s\S]+)<\/script>/;
 
 export default function register(
   { template }: { template: UseTemplate },
@@ -42,10 +46,37 @@ export default function register(
   let entries: Entry[] = fg.sync(include, {
     objectMode: true,
   });
+
+  // use name attribute in option first as component name, 优先使用选项中的name属性作为组件名
+  entries = entries.map((e) => {
+    let name = null;
+    try {
+      const code = fs.readFileSync(e.path, { encoding: 'utf-8' });
+      const scriptBlock = code.match(scriptBlockReg);
+      let optionString = scriptBlock[1].trim();
+      optionString = optionString.replace('export default ', '');
+      // eslint-disable-next-line
+      let option: Record<string, any> = {};
+      // eslint-disable-next-line
+      eval(`option = ${optionString}`)
+      if (option?.name) {
+        name = option.name;
+      }
+    } catch (err) {
+      console.error(err);
+    }
+
+    return {
+      ...e,
+      componentName: name,
+    };
+  });
+
   entries = entries.map((e) => {
     // component name, 组件名
     const nameTokens = e.name.split('.');
-    const name = nameTokens.slice(0, nameTokens.length - 1).join('.');
+    const name = e.componentName
+      || nameTokens.slice(0, nameTokens.length - 1).join('.');
     // import path in main.js, main.js中的导入路径
     const importPath = `./${path.relative(path.resolve(main, '../'), e.path)}`;
     const importPathTokens = importPath.split('.');
