@@ -6,11 +6,11 @@ const kebabcase = require('lodash.kebabcase');
 const camelcase = require('lodash.camelcase');
 
 export interface RegisterOptions {
-  include: string[];
-  main: string;
-  semicolon: boolean;
-  extension: boolean;
-  quotes: 'single' | 'double';
+  include?: string[];
+  main?: string;
+  semicolon?: boolean;
+  extension?: boolean;
+  quotes?: 'single' | 'double';
 }
 
 export interface Entry {
