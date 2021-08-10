@@ -61,6 +61,7 @@ export default function register(
 
       if (typeof item === 'object') {
         const isPkg = item?.componentName === 'package';
+        const isScope = item?.scope;
 
         files = files.map((e: Entry) => {
           let componentName = null;
@@ -68,17 +69,18 @@ export default function register(
 
           // parse name attribute in package.json
           // 解析package.json中的name属性
-          if (item?.scope || isPkg) {
+          if (isScope || isPkg) {
             const tokens = e.path.split('/');
-            for (let i = tokens.length; i > 0; i -= 1) {
-              const pkg = [tokens.slice(0, i), 'package.json'].join('/');
+            const len = tokens.length;
+            for (let i = 1; i < len; i += 1) {
+              const pkg = [...tokens.slice(0, len - i), 'package.json'].join('/');
               try {
-                if (fs.exists(pkg)) {
+                if (fs.existsSync(pkg)) {
                   const code = fs.readFileSync(pkg, { encoding: 'utf-8' });
                   const pkgObj = JSON.parse(code);
                   if (pkgObj.name) {
                     if (isPkg) componentName = pkgObj.name;
-                    if (item?.scope) scope = pkgObj.name;
+                    if (isScope) scope = pkgObj.name;
                   }
                   break;
                 }
@@ -94,14 +96,16 @@ export default function register(
             try {
               const code = fs.readFileSync(e.path, { encoding: 'utf-8' });
               const scriptBlock = code.match(scriptBlockReg);
-              let optionString = scriptBlock[1].trim();
-              optionString = optionString.replace('export default ', '');
-              // eslint-disable-next-line
-              let option: Record<string, any> = {};
-              // eslint-disable-next-line
-              eval(`option = ${optionString}`)
-              if (option?.name) {
-                componentName = option.name;
+              if (scriptBlock?.[1]) {
+                let optionString = scriptBlock[1].trim();
+                optionString = optionString.replace('export default ', '');
+                // eslint-disable-next-line
+                let option: Record<string, any> = {};
+                // eslint-disable-next-line
+                eval(`option = ${optionString}`)
+                if (option?.name) {
+                  componentName = option.name;
+                }
               }
             } catch (err) {
               console.error(err);
@@ -115,7 +119,7 @@ export default function register(
             componentName = nameTokens.slice(0, nameTokens.length - 1).join('.');
           }
 
-          if (item?.scope) {
+          if (scope && isScope) {
             componentName = `${scope}-${componentName}`;
           }
 
