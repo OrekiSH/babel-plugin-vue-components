@@ -62,10 +62,21 @@ main.js文件相对于当前运行脚本的位置
 
 ### `include`
 
-类型: `Array[...String]`<br>
+类型: `Array[...String]` | `Array[...RegisterOptionInclude]`<br>
 默认值: `['./src/components/**/*.vue']`
 
 声明一个[minimatch pattern](https://github.com/isaacs/minimatch)匹配模式的数组，指定插件应该操作的文件
+
+``` ts
+export interface RegisterOptionInclude {
+  path: string;
+  // match nearest package.json's name as scope,
+  scope?: boolean;
+  componentName?: 'file' | 'package' | 'option';
+}
+```
+当scope为`true`时，自动匹配最近package.json的name属性作为组件名的前缀。componentName则指定了组件名的取值: 文件名，最近package.json的name属性, 或是匹配到的Vue SFC文件选择中的name属性。
+
 
 ### `semicolon`
 

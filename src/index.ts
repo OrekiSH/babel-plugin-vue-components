@@ -6,8 +6,16 @@ const path = require('path');
 const kebabcase = require('lodash.kebabcase');
 const camelcase = require('lodash.camelcase');
 
+export interface RegisterOptionInclude {
+  path: string;
+  // match name attribute in the nearest package.json as scope
+  // 匹配最近的package.json的name属性作为组件名的前缀
+  scope?: boolean;
+  componentName?: 'file' | 'package' | 'option';
+}
+
 export interface RegisterOptions {
-  include?: string[];
+  include?: RegisterOptionInclude[] | string[];
   main?: string;
   semicolon?: boolean;
   extension?: boolean;
@@ -42,41 +50,85 @@ export default function register(
   } = options || {};
   const quote = quotes === 'single' ? '\'' : '"';
 
-  // scan dirs, 扫描指定目录
-  let entries: Entry[] = fg.sync(include, {
-    objectMode: true,
-  });
+  let entries: Entry[] = [];
+  if (Array.isArray(include)) {
+    include.forEach((item) => {
+      const filePath = typeof item === 'string' ? item : item?.path;
+      // scan dirs, 扫描指定目录
+      let files = fg.sync([filePath], {
+        objectMode: true,
+      });
 
-  // use name attribute in option first as component name, 优先使用选项中的name属性作为组件名
-  entries = entries.map((e) => {
-    let name = null;
-    try {
-      const code = fs.readFileSync(e.path, { encoding: 'utf-8' });
-      const scriptBlock = code.match(scriptBlockReg);
-      let optionString = scriptBlock[1].trim();
-      optionString = optionString.replace('export default ', '');
-      // eslint-disable-next-line
-      let option: Record<string, any> = {};
-      // eslint-disable-next-line
-      eval(`option = ${optionString}`)
-      if (option?.name) {
-        name = option.name;
+      if (typeof item === 'object') {
+        const isPkg = item?.componentName === 'package';
+
+        files = files.map((e: Entry) => {
+          let componentName = null;
+          let scope = null;
+
+          // parse name attribute in package.json
+          // 解析package.json中的name属性
+          if (item?.scope || isPkg) {
+            const tokens = e.path.split('/');
+            for (let i = tokens.length; i > 0; i -= 1) {
+              const pkg = [tokens.slice(0, i), 'package.json'].join('/');
+              try {
+                if (fs.exists(pkg)) {
+                  const code = fs.readFileSync(pkg, { encoding: 'utf-8' });
+                  const pkgObj = JSON.parse(code);
+                  if (pkgObj.name) {
+                    if (isPkg) componentName = pkgObj.name;
+                    if (item?.scope) scope = pkgObj.name;
+                  }
+                  break;
+                }
+              } catch (err) {
+                console.error(err);
+              }
+            }
+          }
+
+          // use name attribute in Vue SFC option first as component name
+          // 优先使用Vue SFC选项中的name属性作为组件名
+          if (!componentName && item?.componentName === 'option') {
+            try {
+              const code = fs.readFileSync(e.path, { encoding: 'utf-8' });
+              const scriptBlock = code.match(scriptBlockReg);
+              let optionString = scriptBlock[1].trim();
+              optionString = optionString.replace('export default ', '');
+              // eslint-disable-next-line
+              let option: Record<string, any> = {};
+              // eslint-disable-next-line
+              eval(`option = ${optionString}`)
+              if (option?.name) {
+                componentName = option.name;
+              }
+            } catch (err) {
+              console.error(err);
+            }
+          }
+
+          // use file name as component name
+          // 使用文件名作为组件名
+          if (!componentName) {
+            const nameTokens = e.name.split('.');
+            componentName = nameTokens.slice(0, nameTokens.length - 1).join('.');
+          }
+
+          if (item?.scope) {
+            componentName = `${scope}-${componentName}`;
+          }
+
+          return { ...e, componentName };
+        });
       }
-    } catch (err) {
-      console.error(err);
-    }
 
-    return {
-      ...e,
-      componentName: name,
-    };
-  });
+      entries.push(...files);
+    });
+  }
 
   entries = entries.map((e) => {
-    // component name, 组件名
-    const nameTokens = e.name.split('.');
-    const name = e.componentName
-      || nameTokens.slice(0, nameTokens.length - 1).join('.');
+    const name = e.componentName;
     // import path in main.js, main.js中的导入路径
     const importPath = `./${path.relative(path.resolve(main, '../'), e.path)}`;
     const importPathTokens = importPath.split('.');

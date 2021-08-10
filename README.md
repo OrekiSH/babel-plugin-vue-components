@@ -62,10 +62,20 @@ Script path to be transformed
 
 ### `include`
 
-Type: `Array[...String]`<br>
+Type: `Array[...String]` | `Array[...RegisterOptionInclude]`<br>
 Default: `['./src/components/**/*.vue']`
 
 An array of [minimatch patterns](https://github.com/isaacs/minimatch), which specifies the files in the build the plugin should operate on. By default all files are targeted.
+
+
+``` ts
+export interface RegisterOptionInclude {
+  path: string;
+  scope?: boolean;
+  componentName?: 'file' | 'package' | 'option';
+}
+```
+When `scope` is `true`，match the name attribute in the nearest package.json as Vue component's prefix. `componentName` establish the value of Vue component's name: file name，name attribute in the nearest package.json, or name attribute in matched Vue SFC file's option。
 
 ### `semicolon`
 
